@@ -15,6 +15,8 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import org.greenrobot.eventbus.EventBus;
+
 public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandler {
     private static final String TAG = "wx";
     private IWXAPI api;
@@ -37,6 +39,8 @@ public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandl
             if (baseResp.errCode==0)
             {
                 Toast.makeText(this,"支付成功",Toast.LENGTH_SHORT).show();
+                EventBus.getDefault().post("aa");
+                finish();
             }
             else if (baseResp.errCode==-2)
             {
@@ -46,6 +50,7 @@ public class WXPayEntryActivity extends BaseActivity implements IWXAPIEventHandl
             else
             {
                 Toast.makeText(this,"支付失败",Toast.LENGTH_SHORT).show();
+                EventBus.getDefault().post("aa");
                 finish();
             }
 

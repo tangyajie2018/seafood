@@ -35,11 +35,15 @@ import com.umeng.socialize.UMShareListener;
 import com.umeng.socialize.bean.SHARE_MEDIA;
 import com.umeng.socialize.media.UMWeb;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpCookie;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +52,7 @@ public class MainActivity extends BaseActivity {
 
     private WebView webView;
 //    private String homeUrl="http://ff.leanote.top/mobile/";
-    private String homeUrl= "http://wx.bjdglt.com/";
+    private String homeUrl= "http://wx.bjdglt.com/mobile/";
     private String CookieUrl="wx.bjdglt.com/mobile";
 //private String homeUrl="http://wx.bjdglt.com/mobile/index.php?m=user&origin=app&openid=123123123&token=33333";
 //    private ImageView backImage;
@@ -102,8 +106,18 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
+        EventBus.getDefault().register(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(String event){
+        webView.loadUrl(skipUrl);
+    }
 
     private UMShareListener shareListener = new UMShareListener() {
         /**
@@ -421,7 +435,9 @@ public class MainActivity extends BaseActivity {
                     PayResult payResult = new PayResult((Map<String, String>) msg.obj);
                     String resultInfo = payResult.getResult();// 同步返回需要验证的信息
                     String resultStatus = payResult.getResultStatus();
+                    Log.d(TAG,resultStatus+".."+payResult.getResult());
                     if (TextUtils.equals(resultStatus, "9000")) {
+                        webView.loadUrl(skipUrl);
 //                        Intent intent = new Intent(BalanceActivity.this, BuyPointSucessActivity.class);
 //                        intent.putExtra("payno", payno);
 ////                        intent.putExtra("iid", iid);
@@ -485,41 +501,52 @@ public class MainActivity extends BaseActivity {
         @android.webkit.JavascriptInterface
         public void doPay(int panType,String body,String skip_url) {
             Log.d(TAG,"textClick.setOnClickListener\n"+panType+"\n"+body+"\n"+skip_url);
+            skipUrl=skip_url;
+            if(panType==2){
+                alipay(body);
+            }else {
+                WechatReq req=JsonMananger.jsonToBean(body, WechatReq.class);
+                wxPay(req);
+            }
 //            InputMethodManager imm = (InputMethodManager) mContext.getSystemService(INPUT_METHOD_SERVICE);
 //            imm.hideSoftInputFromWindow(activity.getEditText().getApplicationWindowToken(), 0);
         }
     }
 
-    private void wxPay(){
+    private String skipUrl;
+
+    private void wxPay(WechatReq req){
 //        WXAPIFactory.createWXAPI(MainActivity.this, null);
         IWXAPI msgApi = WXAPIFactory.createWXAPI(MainActivity.this, null);
-//        msgApi.registerApp(result.getAppid());
+        msgApi.registerApp(req.getAppid());
 //        StringUtil.appidwxpay = result.getAppid();
-//        PayReq requestwx = new PayReq();
-//        requestwx.appId = result.getAppid();
-//        requestwx.partnerId = result.getPartnerid();
-//        requestwx.prepayId = result.getPrepayid();
-//        requestwx.packageValue = "Sign=WXPay";
-//        requestwx.nonceStr = result.getNoncestr();
-//        requestwx.timeStamp = result.getTimestamp();
-//        requestwx.sign = result.getSign();
+        PayReq requestwx = new PayReq();
+        requestwx.appId = req.getAppid();
+        requestwx.partnerId = req.getPartnerid();
+        requestwx.prepayId = req.getPrepayid();
+        requestwx.packageValue = "Sign=WXPay";
+        requestwx.nonceStr = req.getNoncestr();
+        requestwx.timeStamp = req.getTimestamp();
+        requestwx.sign = req.getSign();
 //        requestwx.extData = "balance";
-//        msgApi.sendReq(requestwx);
+        msgApi.sendReq(requestwx);
     }
 
-    private void alipay(){
-//        Runnable authRunnable = new Runnable() {
-//            @Override
-//            public void run() {
-//                PayTask alipay = new PayTask(MainActivity.this);
-//                Map<String, String> result = alipay.payV2(URLDecoder.decode(restring), true);
-//                Message msg = new Message();
-//                msg.what = SDK_PAY_FLAG;
-//                msg.obj = result;
-//                mHandler.sendMessage(msg);
-//            }
-//        };
-//        Thread authThread = new Thread(authRunnable);
-//        authThread.start();
+    private void alipay(final String restring){
+        Runnable authRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, URLDecoder.decode(restring));
+                PayTask alipay = new PayTask(MainActivity.this);
+                Map<String, String> result = alipay.payV2(URLDecoder.decode(restring), true);
+//                Map<String, String> result = alipay.payV2(restring, true);
+                Message msg = new Message();
+                msg.what = SDK_PAY_FLAG;
+                msg.obj = result;
+                mHandler.sendMessage(msg);
+            }
+        };
+        Thread authThread = new Thread(authRunnable);
+        authThread.start();
     }
 }
