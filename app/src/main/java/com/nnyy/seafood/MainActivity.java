@@ -345,7 +345,9 @@ public class MainActivity extends BaseActivity {
     @Override
     public void onBackPressed() {
 //        super.onBackPressed();
-        if (webView.canGoBack()) {
+        if(webView.getUrl().equals(skipUrl)){
+            webView.loadUrl(homeUrl);
+        }else if (!webView.getUrl().equals(homeUrl)&&webView.canGoBack()) {
             webView.goBack();
 //                ivFinish.setVisibility(View.VISIBLE);
 
