@@ -539,9 +539,20 @@ public class MainActivity extends BaseActivity {
             @Override
             public void run() {
                 Log.d(TAG, URLDecoder.decode(restring));
+//                String[] keyValue=restring.split("&");
+////                String[] after=new String[keyValue.length];
+//                String endString="";
+//                for(int i=0;i<keyValue.length;i++){
+//                    String[] temp=keyValue[i].split("=");
+////                    after[i]=temp[0]+"="+URLEncoder.encode(temp[1]);
+//                    endString=endString+temp[0]+"="+URLEncoder.encode(temp[1])+"&";
+//                }
+//                endString=endString.substring(0,endString.length()-1);
+//                Log.d(TAG, endString);
                 PayTask alipay = new PayTask(MainActivity.this);
-                Map<String, String> result = alipay.payV2(URLDecoder.decode(restring), true);
-//                Map<String, String> result = alipay.payV2(restring, true);
+//                String abc="app_id=2088721907984278&method=od=alipay.trade.app.pay&for&format=JSON&charset=utf-8&sign_type=RSA2&version=1.0¬ify_url=rl=http://wx.bjdglt.com/nnyyapi/api/alipay/notify×tam×tamp=2018-08-21 15:12:28&sign=k1ZPuZqrlcKPdpZip+t9FyRmGCjDvqme2KkEabQBDfrFmx2grqpsG7pc9zEipLYvElYCdJp2oOh7yArQR2xRyhkeguYsOsjOUKvp4Cs2jAMrlO0ufCUzUTU9fDlkqfz6hrASmmV58JElpg/249+318ZQAmyuc4vat/TclN5Te3O8QZClXWJVpDp2LStxJn1JYyTkFw0j9H/RlCiKxbgp75xXEs6X7i2B0cuLTcw8t6J2TDD1UMJIko7fQlTeKTwYawjhkqIf3wENVTV1D33X40IvvA2jPZK0r00cyUZfMBIxgTHiqdsQMtmoCxvzbp6r3glYbofEbDN+85kxJNWj3w==&biz_content={\"out_trade_no\":\"20180821151236881931O125\",\"total_amount\":\"0.01\",\"subject\":\"\\u5e74\\u5e74\\u6709\\u9c7c-\\u652f\\u4ed8\",\"product_code\":\"QUICK_MSECURITY_PAY\"}";
+//                Map<String, String> result = alipay.payV2(endString, true);
+                Map<String, String> result = alipay.payV2(restring, true);
                 Message msg = new Message();
                 msg.what = SDK_PAY_FLAG;
                 msg.obj = result;
